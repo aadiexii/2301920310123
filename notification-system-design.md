@@ -120,3 +120,95 @@ AND created_at >= NOW() - INTERVAL '7 days';
 ```
 
 ---
+
+## Stage 4
+
+### Reducing DB Load on Page Load
+
+Problem: DB getting hit every page load for every student.
+
+Options:
+
+**Redis caching** — cache each student's notifications for 60 seconds. On new notification invalidate their cache. Small staleness tradeoff but huge reduction in DB hits.
+
+**Pagination** — don't load all notifications at once, use limit/offset. Reduces data transferred per request.
+
+**Read replica** — route all reads to a replica, writes go to primary. Tradeoff is replication lag and extra infra cost.
+
+I'd start with Redis caching as it gives immediate relief without much complexity.
+
+---
+
+## Stage 5
+
+### Fixing notify_all
+
+Problems with current implementation:
+- send_email fails at student 200, remaining 49800 get nothing
+- sequential email + DB insert per student is very slow
+- no retries on failure
+
+DB save and email should NOT happen together. Save to DB first always. Email is a side effect and can be retried. If DB fails we lose the record.
+
+Revised pseudocode:
+```javascript
+async function notify_all(student_ids, message) {
+  await db.bulkInsert(student_ids.map(id => ({
+    student_id: id,
+    message,
+    type: 'Placement',
+    is_read: false
+  })));
+
+  await queue.addBulk(student_ids.map(id => ({
+    job: 'send_email',
+    data: { student_id: id, message }
+  })));
+
+  sse.broadcast({ message, type: 'Placement' });
+}
+```
+
+---
+
+## Stage 6
+
+### Priority Inbox
+
+Priority score per notification:
+- Placement = weight 3, Result = weight 2, Event = weight 1
+- Recency also matters — newer = higher score
+
+Formula: score = typeWeight * 10 - ageInMinutes * 0.1
+
+To maintain top 10 efficiently as new notifications keep coming — use a min-heap of size 10. When a new notification arrives, if its score is greater than the heap minimum, replace it. This is O(log 10) which is effectively constant time.
+
+Both endpoints are working. Sample outputs and full screenshots are attached below.
+
+**Vehicle Scheduler** — sample:
+```json
+{
+  "depotId": 1,
+  "mechanicHours": 60,
+  "totalImpact": 117,
+  "scheduledVehicles": ["dfa12f6c-...", "ebfd0164-...", "..."]
+}
+```
+
+**Notification Priority** — sample:
+```json
+{
+  "ID": "e8cf80c0-...",
+  "Type": "Placement",
+  "Message": "Meta Platforms Inc. hiring",
+  "Timestamp": "2026-06-26 05:29:58"
+}
+```
+
+#### Screenshots
+
+Vehicle Scheduler Output:
+![vehicle scheduler output](./screenshots/vehicles-output.png)
+
+Notification Priority Output:
+![notification priority output](./screenshots/notifications-output.png)
