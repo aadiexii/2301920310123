@@ -1,0 +1,25 @@
+{
+  "name": "campus-evaluation-be",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aadiexii/2301920310123.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module", 
+  "bugs": {
+    "url": "https://github.com/aadiexii/2301920310123/issues"
+  },
+  "homepage": "https://github.com/aadiexii/2301920310123#readme",
+  "dependencies": {
+    "axios": "^1.18.1",
+    "express": "^5.2.1"
+  }
+}
