@@ -90,3 +90,33 @@ AND created_at >= NOW() - INTERVAL '7 days';
 ```
 
 ---
+
+## Stage 3
+
+### Query Optimization
+
+The slow query:
+```sql
+SELECT * FROM notifications
+WHERE studentID = 1042 AND isRead = false
+ORDER BY createdAt DESC;
+```
+
+It's slow because there are no indexes so it scans all 5 million rows.
+
+Fix — add a composite index:
+```sql
+CREATE INDEX idx_notif_student_read
+ON notifications(student_id, is_read, created_at DESC);
+```
+
+Adding indexes on every column is not a good idea. Indexes slow down INSERT and UPDATE. With high notification volume, writes happen constantly so too many indexes will hurt write performance.
+
+Query for placement notifications in last 7 days:
+```sql
+SELECT DISTINCT student_id FROM notifications
+WHERE type = 'Placement'
+AND created_at >= NOW() - INTERVAL '7 days';
+```
+
+---
