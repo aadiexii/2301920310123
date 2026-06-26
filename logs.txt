@@ -1,0 +1,10 @@
+[2026-06-26T05:51:44.720Z] GET /vehicles/schedule 500 - 111ms
+[2026-06-26T05:51:46.854Z] GET /vehicles/schedule 500 - 42ms
+[2026-06-26T05:51:47.826Z] GET /vehicles/schedule 500 - 43ms
+[2026-06-26T05:54:24.859Z] GET /vehicles/schedule 500 - 102ms
+[2026-06-26T05:54:27.454Z] GET /vehicles/schedule 500 - 43ms
+[2026-06-26T06:00:28.007Z] GET / 200 - 8ms
+[2026-06-26T06:01:12.755Z] GET /vehicles/schedule 200 - 99ms
+[2026-06-26T06:01:39.156Z] GET /notifications/priority 200 - 86ms
+[2026-06-26T06:02:26.061Z] GET /notifications/priority 200 - 90ms
+[2026-06-26T06:03:08.087Z] GET /vehicles/schedule 200 - 88ms
